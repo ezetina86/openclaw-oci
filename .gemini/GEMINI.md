@@ -26,3 +26,4 @@
 - Infrastructure: Use OpenTofu for all HCL configurations.
 - Testing: All OpenTofu configuration additions must include a corresponding `.tftest.hcl` file testing structure via plan validations under `/infra/tests/`.
 - Project Logo: If a new document is created in the future, the `logo.png` file must be added/included in it.
+- NO AI MERGE: Antigravity is strictly UNAUTHORIZED to merge Pull Requests. All merges must be manually performed by the USER after review.

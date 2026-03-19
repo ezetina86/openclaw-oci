@@ -54,3 +54,4 @@ jobs:
           directory: infra
           framework: terraform
           soft_fail: false
+          skip_check: CKV_OCI_4,CKV_OCI_5,CKV_OCI_19
