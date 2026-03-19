@@ -47,6 +47,7 @@ Configuration is stored in the `infra/` directory.
    ```bash
    make infra-init
    make infra-plan
+   make infra-test    # Optional: Run structure validations
    make infra-apply
    ```
 
