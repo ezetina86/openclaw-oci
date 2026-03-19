@@ -59,6 +59,14 @@ After the first launch, you must authorize the cloudflared tunnel.
    systemctl --user restart cloudflared.service
    ```
 
+## Infrastructure Testing
+When adding new resources to the `infra/` folder, you must add structural validations inside `infra/tests/` using `.tftest.hcl` files.
+You can run the test suite natively with OpenTofu:
+```bash
+make infra-test
+```
+This requires no physical infrastructure interactions due to its `command = plan` setup and mock bindings.
+
 ## Troubleshooting
 - Logs: journalctl --user -u openclaw.service
 - Socket Errors: Ensure XDG_RUNTIME_DIR is set when running commands manually. (This is handled automatically by the cloud-init login script).
