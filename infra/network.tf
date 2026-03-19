@@ -51,12 +51,12 @@ resource "oci_core_security_list" "openclaw_sl" {
 }
 
 resource "oci_core_subnet" "openclaw_subnet" {
-  compartment_id      = var.compartment_id
-  vcn_id              = oci_core_vcn.openclaw_vcn.id
-  cidr_block          = "10.0.0.0/24"
-  display_name        = "openclaw-public-subnet"
-  dns_label           = "public"
-  route_table_id      = oci_core_route_table.openclaw_rt.id
-  security_list_ids   = [oci_core_security_list.openclaw_sl.id]
+  compartment_id             = var.compartment_id
+  vcn_id                     = oci_core_vcn.openclaw_vcn.id
+  cidr_block                 = "10.0.0.0/24"
+  display_name               = "openclaw-public-subnet"
+  dns_label                  = "public"
+  route_table_id             = oci_core_route_table.openclaw_rt.id
+  security_list_ids          = [oci_core_security_list.openclaw_sl.id]
   prohibit_public_ip_on_vnic = false
 }

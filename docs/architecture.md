@@ -1,6 +1,6 @@
 # Architecture: OpenClaw Container Gateway
 
-![OpenClaw Logo](../logo.png)
+<img src="../logo.png" width="50%" alt="OpenClaw Logo">
 
 This document outlines the security-first architecture of the OpenClaw Container Gateway.
 
@@ -29,6 +29,7 @@ CF_Edge-->>User: Response Delivered
 - **Shape**: `VM.Standard.A1.Flex` (Ampere A1).
 - **Region**: `us-chicago-1` (ORD).
 - **Isolation**: VCN with strict ingress rules. Only TCP 22 (SSH) is permitted, and ideally, only from known administrator IPs.
+- **Provisioning**: Managed via OpenTofu (HCL). All changes are validated through a mock-based CI pipeline (`infra-ci.yml`) and Checkov security scans before merging to `dev` or `main`.
 
 ### Compute Layer (Debian/Ubuntu)
 - **OS**: Ubuntu 22.04 LTS (AArch64).

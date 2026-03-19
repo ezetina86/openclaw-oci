@@ -13,6 +13,13 @@
 - Feature Branches (`feat/*`, `fix/*`, `chore/*`): Used for all new changes.
 - Commits: Follow Conventional Commits format (e.g., `feat:`, `fix:`, `docs:`, `chore:`).
 
+## CI/CD Strategy
+- **Pipeline:** Our primary infrastructure validation mechanism is defined in `.github/workflows/infra-ci.yml`.
+- **Early Triggers:** To ensure early feedback, the pipeline triggers asynchronously on pushes to any feature branch (`feat/*`, `fix/*`, `chore/*`) as well as Pull Requests targeting `dev` or `main`.
+- **Validation Checks:** Every CI run enforces formatting (`tofu fmt`), structural validity (`tofu validate`), mocked test assertions (`tofu test`), and comprehensive security scanning via Checkov.
+- **Credential Safety:** Due to the use of `-backend=false` and `.tftest` mock providers, the CI pipeline simulates OCI environments safely without requiring live provider secrets on GitHub.
+- **Pre-commit Workflow:** Local developers run lightweight `pre-commit` hooks (configured in `.pre-commit-config.yaml`) strictly for fast file formatting. Heavy validations are explicitly deferred to the automated CI pipeline to avoid local development blockers.
+
 ## Mandates and Rules
 - NO EMOJIS: Do not use emojis in documentation, code comments, or terminal logs.
 - Rootless: Always manage containers via systemd --user.
