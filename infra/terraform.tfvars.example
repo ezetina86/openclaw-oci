@@ -1,0 +1,9 @@
+# The OCID of the compartment where resources will be hosted.
+compartment_id = "ocid1.compartment.oc1..xxxxxx"
+
+# The specific Availability Domain in your region that grants "Always Free" Arm capacity.
+# For example: "Uocm:US-ASHBURN-AD-1"
+availability_domain = "YOUR_AD_IDENTIFIER"
+
+# Your public SSH key string to log into the "debian" user.
+ssh_public_key = "ssh-rsa AAAAB3NzaC1yc... user@machine"
