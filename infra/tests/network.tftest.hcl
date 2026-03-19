@@ -31,6 +31,8 @@ override_data {
 
 variables {
   compartment_id      = "ocid1.compartment.oc1..testing123"
+  availability_domain = "XyzA:US-ASHBURN-AD-1"
+  ssh_public_key      = "ssh-rsa AAAAB3NzaC1..."
 }
 
 run "validate_vcn" {

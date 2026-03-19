@@ -7,9 +7,9 @@ terraform {
   }
 
   backend "s3" {
-    bucket   = "terraform-states"
-    key      = "openclaw/terraform.tfstate"
-    region   = "us-chicago-1"
+    bucket = "terraform-states"
+    key    = "openclaw/terraform.tfstate"
+    region = "us-chicago-1"
 
     endpoints = {
       s3 = "https://axarqa6y0qva.compat.objectstorage.us-chicago-1.oraclecloud.com"

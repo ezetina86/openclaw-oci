@@ -1,6 +1,6 @@
 # OpenClaw Container Gateway
 
-![OpenClaw Logo](logo.png)
+<img src="logo.png" width="50%" alt="OpenClaw Logo">
 
 A production-grade, secure, and cost-effective container gateway running on Oracle Cloud Infrastructure (OCI) Always Free ARM (Ampere A1).
 
@@ -58,6 +58,11 @@ If OCI returns an "Out of host capacity" error (common for Always Free regions),
 ```bash
 ./infra-launch-loop.sh
 ```
+
+### 4. CI/CD Pipeline & Testing
+This project strictly enforces infrastructure validation via a GitHub Actions CI pipeline (`.github/workflows/infra-ci.yml`).
+- **Local Pre-commit:** Run `pre-commit install` locally to ensure OpenTofu formatting and basic sanitization before pushing to GitHub.
+- **Continuous Integration:** Any push to a feature branch (`feat/*`, `fix/*`, `chore/*`) or Pull Request automatically triggers the pipeline. It performs `tofu validate`, native OpenTofu structural mocks (`tofu test`), and Checkov security scans. Because tests operate entirely on mocks, the pipeline requires no live OCI credentials.
 
 ---
 

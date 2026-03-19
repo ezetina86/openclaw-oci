@@ -29,6 +29,7 @@ resource "oci_core_route_table" "openclaw_rt" {
   }
 }
 
+# checkov:skip=CKV_OCI_19: Public SSH access is required for initial bootstrap of this gateway instance
 resource "oci_core_security_list" "openclaw_sl" {
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.openclaw_vcn.id
@@ -51,12 +52,12 @@ resource "oci_core_security_list" "openclaw_sl" {
 }
 
 resource "oci_core_subnet" "openclaw_subnet" {
-  compartment_id      = var.compartment_id
-  vcn_id              = oci_core_vcn.openclaw_vcn.id
-  cidr_block          = "10.0.0.0/24"
-  display_name        = "openclaw-public-subnet"
-  dns_label           = "public"
-  route_table_id      = oci_core_route_table.openclaw_rt.id
-  security_list_ids   = [oci_core_security_list.openclaw_sl.id]
+  compartment_id             = var.compartment_id
+  vcn_id                     = oci_core_vcn.openclaw_vcn.id
+  cidr_block                 = "10.0.0.0/24"
+  display_name               = "openclaw-public-subnet"
+  dns_label                  = "public"
+  route_table_id             = oci_core_route_table.openclaw_rt.id
+  security_list_ids          = [oci_core_security_list.openclaw_sl.id]
   prohibit_public_ip_on_vnic = false
 }

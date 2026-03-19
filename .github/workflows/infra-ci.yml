@@ -1,0 +1,57 @@
+name: Infrastructure CI
+
+on:
+  push:
+    branches:
+      - 'feat/**'
+      - 'fix/**'
+      - 'chore/**'
+    paths:
+      - 'infra/**'
+  pull_request:
+    branches:
+      - dev
+      - main
+    paths:
+      - 'infra/**'
+
+env:
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  validate-infra:
+    name: Validate OpenTofu Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: Tofu Format Check
+        run: tofu fmt -check
+        working-directory: ./infra
+
+      - name: Tofu Init
+        # Initialize without remote backend to prevent needing credentials
+        run: tofu init -backend=false
+        working-directory: ./infra
+
+      - name: Tofu Validate
+        run: tofu validate
+        working-directory: ./infra
+
+      - name: Tofu Test
+        run: tofu test
+        working-directory: ./infra
+
+      - name: Checkov Security Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infra
+          framework: terraform
+          soft_fail: false
+          skip_check: CKV_OCI_4,CKV_OCI_5,CKV_OCI_19

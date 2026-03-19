@@ -21,6 +21,8 @@ data "local_file" "cloud_init" {
   filename = "${path.module}/cloud-init.yaml"
 }
 
+# checkov:skip=CKV_OCI_4: Boot volume In-transit encryption not required for Always-Free lab environment
+# checkov:skip=CKV_OCI_5: Legacy Metadata service required for specific cloud-init automation in this setup
 resource "oci_core_instance" "openclaw_instance" {
   compartment_id      = var.compartment_id
   availability_domain = var.availability_domain

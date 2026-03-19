@@ -36,7 +36,7 @@ variables {
 }
 
 run "validate_a1_flex_shape" {
-  command = plan 
+  command = plan
 
   assert {
     condition     = oci_core_instance.openclaw_instance.shape == "VM.Standard.A1.Flex"
