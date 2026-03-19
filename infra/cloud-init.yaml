@@ -13,7 +13,7 @@ runcmd:
   # Download and install cloudflared for ARM64
   - curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64 -o /usr/local/bin/cloudflared
   - chmod +x /usr/local/bin/cloudflared
-  
+
   # Setup OpenClaw workspace directory for ubuntu user
   - mkdir -p /home/ubuntu/.openclaw/workspace
   - chown -R ubuntu:ubuntu /home/ubuntu/.openclaw
@@ -23,7 +23,7 @@ runcmd:
 
   # Create the user-level systemd directory structure
   - mkdir -p /home/ubuntu/.config/systemd/user
-  
+
   # Write the Cloudflared service unit
   - |
     cat > /home/ubuntu/.config/systemd/user/cloudflared.service << 'EOF'

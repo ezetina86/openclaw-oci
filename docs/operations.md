@@ -1,6 +1,6 @@
 # Operations Manual: Managing OpenClaw
 
-![OpenClaw Logo](../logo.png)
+<img src="../logo.png" width="50%" alt="OpenClaw Logo">
 
 ```mermaid
 graph TD
@@ -68,6 +68,26 @@ You can run the test suite natively with OpenTofu:
 make infra-test
 ```
 This requires no physical infrastructure interactions due to its `command = plan` setup and mock bindings.
+
+### Continuous Integration
+We rely on a GitHub Actions pipeline (`.github/workflows/infra-ci.yml`) to automatically validate infrastructure on every commit and Pull Request modifying the `infra/` directory.
+The pipeline runs the following verification steps:
+1. `tofu fmt -check`: Enforces consistent styling.
+2. `tofu validate`: Verifies syntax and configuration validity.
+3. `tofu test`: Replays your OpenTofu `.tftest.hcl` tests against mocked infrastructure, guaranteeing there are no breaking structural changes.
+4. `Checkov Scan`: Analyzes the OpenTofu code to spot potential security misconfigurations.
+
+If any of these steps (formatting, validation, testing, or the Checkov scan) fail, the pipeline will fail and block merging.
+
+Since the tests use mocks, the pipeline does not attempt to deploy live resources, and it will never fail because of missing local infrastructure credentials or properties.
+
+### Pre-commit Hooks
+To catch styling and basic structural issues immediately before you push to GitHub, we have configured `pre-commit` hooks.
+Install the `pre-commit` utility locally (e.g. `brew install pre-commit` or `pip install pre-commit`), then run:
+```bash
+pre-commit install
+```
+Locally, these hooks only perform lightweight and fast checks (like `tofu fmt` and file sanitization) so they don't block your local workflow due to missing credentials. The heavier structural validations, tests, and Checkov security scans are intentionally deferred to the GitHub Actions CI pipeline.
 
 ## Troubleshooting
 - Logs: journalctl --user -u openclaw.service
