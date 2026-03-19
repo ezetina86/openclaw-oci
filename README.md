@@ -1,5 +1,7 @@
 # OpenClaw Container Gateway
 
+![OpenClaw Logo](logo.png)
+
 A production-grade, secure, and cost-effective container gateway running on Oracle Cloud Infrastructure (OCI) Always Free ARM (Ampere A1).
 
 ## Project Overview

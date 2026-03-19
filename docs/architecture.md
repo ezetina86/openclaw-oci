@@ -1,5 +1,7 @@
 # Architecture: OpenClaw Container Gateway
 
+![OpenClaw Logo](../logo.png)
+
 This document outlines the security-first architecture of the OpenClaw Container Gateway.
 
 ## Security & Traffic Flow

@@ -1,5 +1,7 @@
 # Operations Manual: Managing OpenClaw
 
+![OpenClaw Logo](../logo.png)
+
 ```mermaid
 graph TD
     A[Start Update] --> B[Pull Latest]
