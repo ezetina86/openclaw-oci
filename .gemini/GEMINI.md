@@ -7,7 +7,9 @@
 - Ingress: Cloudflare Tunnel (Zero-Trust)
 - Container Engine: Rootless Podman
 
-## Git Strategy
+## Git Strategy (Strict PR Workflow)
+- **SECURITY CONSTRAINT**: Direct pushes to `dev` or `main` are strictly forbidden. All changes MUST go through Pull Requests.
+- **Workflow**: `feature-branch` -> Pull Request -> `dev` -> Pull Request -> `main`.
 - Main Branch (`main`): Protected, production-ready code only.
 - Development Branch (`dev`): Primary integration branch. All active development merges here before Main.
 - Feature Branches (`feat/*`, `fix/*`, `chore/*`): Used for all new changes.
