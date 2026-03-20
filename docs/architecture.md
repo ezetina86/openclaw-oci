@@ -1,6 +1,7 @@
+<p align="center"><img src="../logo.png" width="30%" alt="OpenClaw Logo"></p>
+
 # Architecture: OpenClaw Container Gateway
 
-<img src="../logo.png" width="50%" alt="OpenClaw Logo">
 
 This document outlines the security-first architecture of the OpenClaw Container Gateway.
 

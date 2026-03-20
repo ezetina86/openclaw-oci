@@ -33,6 +33,8 @@ variables {
   compartment_id      = "ocid1.compartment.oc1..testing123"
   availability_domain = "XyzA:US-ASHBURN-AD-1"
   ssh_public_key      = "ssh-rsa AAAAB3NzaC1..."
+  tenancy_ocid        = "ocid1.tenancy.oc1..testing123"
+  budget_alert_email  = "test@example.com"
 }
 
 run "validate_vcn" {
@@ -41,5 +43,15 @@ run "validate_vcn" {
   assert {
     condition     = oci_core_vcn.openclaw_vcn.cidr_blocks[0] == "10.0.0.0/16"
     error_message = "The VCN must use the 10.0.0.0/16 CIDR block for safety"
+  }
+
+  assert {
+    condition     = oci_core_subnet.openclaw_subnet.cidr_block == "10.0.0.0/24"
+    error_message = "The public subnet must use the 10.0.0.0/24 CIDR block"
+  }
+
+  assert {
+    condition     = oci_core_subnet.openclaw_subnet.prohibit_public_ip_on_vnic == false
+    error_message = "The public subnet must allow public IPs for the Cloudflare tunnel"
   }
 }
