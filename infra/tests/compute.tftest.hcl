@@ -33,6 +33,8 @@ variables {
   compartment_id      = "ocid1.compartment.oc1..testing123"
   availability_domain = "XyzA:US-ASHBURN-AD-1"
   ssh_public_key      = "ssh-rsa AAAAB3NzaC1..."
+  tenancy_ocid        = "ocid1.tenancy.oc1..testing123"
+  budget_alert_email  = "test@example.com"
 }
 
 run "validate_a1_flex_shape" {
@@ -41,5 +43,20 @@ run "validate_a1_flex_shape" {
   assert {
     condition     = oci_core_instance.openclaw_instance.shape == "VM.Standard.A1.Flex"
     error_message = "The instance must use the Always Free ARM shape: VM.Standard.A1.Flex"
+  }
+
+  assert {
+    condition     = oci_core_instance.openclaw_instance.shape_config[0].ocpus == 4
+    error_message = "The instance must use exactly 4 OCPUs for Always Free compliance"
+  }
+
+  assert {
+    condition     = oci_budget_budget.openclaw_spend_alert.amount == 1
+    error_message = "The budget must be set to $1 to catch any unexpected spend"
+  }
+
+  assert {
+    condition     = oci_budget_budget.openclaw_spend_alert.reset_period == "MONTHLY"
+    error_message = "The budget must reset monthly"
   }
 }
