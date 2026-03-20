@@ -10,12 +10,14 @@ on:
       - 'main'
     paths:
       - 'infra/**'
+      - '.github/workflows/infra-ci.yml'
   pull_request:
     branches:
       - dev
       - main
     paths:
       - 'infra/**'
+      - '.github/workflows/infra-ci.yml'
 
 env:
   TF_IN_AUTOMATION: "true"
