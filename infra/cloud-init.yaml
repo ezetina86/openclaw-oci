@@ -14,17 +14,21 @@ runcmd:
   - curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64 -o /usr/local/bin/cloudflared
   - chmod +x /usr/local/bin/cloudflared
 
-  # Setup OpenClaw workspace directory for ubuntu user
-  - mkdir -p /home/ubuntu/.openclaw/workspace
+  # Run official OpenClaw installer (non-interactive)
+  - |
+    # Ensure Node.js 22 is present as required by OpenClaw
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+    apt-get install -y nodejs git
+    
+    # Run the installer script
+    export OPENCLAW_NON_INTERACTIVE=true
+    curl -fsSL https://openclaw.ai/install.sh | bash
+
+  # Setup OpenClaw environment directories
+  - mkdir -p /home/ubuntu/.openclaw
   - chown -R ubuntu:ubuntu /home/ubuntu/.openclaw
 
-  # Enable lingering for the ubuntu user to allow running rootless containers while not logged in
-  - loginctl enable-linger ubuntu
-
-  # Create the user-level systemd directory structure
-  - mkdir -p /home/ubuntu/.config/systemd/user
-
-  # Write the Cloudflared service unit
+  # Write the Cloudflared service unit (Native Ingress)
   - |
     cat > /home/ubuntu/.config/systemd/user/cloudflared.service << 'EOF'
     [Unit]
@@ -34,7 +38,9 @@ runcmd:
 
     [Service]
     Type=simple
-    ExecStart=/usr/local/bin/cloudflared tunnel --no-autoupdate run
+    # Looking for a token in the secure .openclaw directory
+    # Pointing to the native OpenClaw port 18789
+    ExecStart=/bin/bash -c "/usr/local/bin/cloudflared tunnel --no-autoupdate run --token $(cat /home/ubuntu/.openclaw/tunnel_token 2>/dev/null || echo 'MISSING_TOKEN')"
     Restart=always
     RestartSec=5
     TimeoutStartSec=0
@@ -43,36 +49,9 @@ runcmd:
     WantedBy=default.target
     EOF
 
-  # Write the OpenClaw podman service unit
-  - |
-    cat > /home/ubuntu/.config/systemd/user/openclaw.service << 'EOF'
-    [Unit]
-    Description=OpenClaw Container Gateway
-    After=network-online.target
-    Wants=network-online.target
-
-    [Service]
-    Type=simple
-    TimeoutStartSec=5m
-    ExecStartPre=-/usr/bin/podman rm -f openclaw
-    ExecStart=/usr/bin/podman run --name openclaw --replace \
-      --cap-drop=ALL \
-      --security-opt no-new-privileges \
-      -v /home/ubuntu/.openclaw/workspace:/workspace:Z \
-      docker.io/openclaw/openclaw:latest
-    ExecStop=/usr/bin/podman stop openclaw
-    ExecStopPost=/usr/bin/podman rm -f openclaw
-    Restart=always
-
-    [Install]
-    WantedBy=default.target
-    EOF
-
   # Set permissions for systemd user configuration
   - chown -R ubuntu:ubuntu /home/ubuntu/.config
 
-  # Enable and start services for the ubuntu user via systemctl --user
-  # Using XDG_RUNTIME_DIR to ensure systemctl interacts with the user's systemd daemon correctly
+  # Enable and start cloudflared for the ubuntu user
   - su - ubuntu -c 'XDG_RUNTIME_DIR=/run/user/$(id -u ubuntu) systemctl --user daemon-reload'
   - su - ubuntu -c 'XDG_RUNTIME_DIR=/run/user/$(id -u ubuntu) systemctl --user enable --now cloudflared.service'
-  - su - ubuntu -c 'XDG_RUNTIME_DIR=/run/user/$(id -u ubuntu) systemctl --user enable --now openclaw.service'

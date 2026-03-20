@@ -62,7 +62,7 @@ infra-check:
 		--query "data[*].{Name: \"display-name\", IP: \"ip-address\", State: \"lifecycle-state\"}" \
 		--output table 2>/dev/null || echo "None."
 
-# Show active budgets and free-tier compute limits
+# ARM Compute Limits (Free Tier)
 costs:
 	@echo "--- Active Budgets ---"
 	@oci budgets budget budget list \
@@ -79,4 +79,22 @@ costs:
 		--query "data[?contains(name, 'standard-a1') && !contains(name, 'reserv') && !contains(name, 'dvh') && !contains(name, 'regional')].{Resource: name, Limit: value}" \
 		--all \
 		--output table 2>/dev/null || echo "Unable to fetch limits."
+
+# --- Operational Helpers ---
+
+# Get the public IP of the gateway instance
+GATEWAY_IP := $(shell oci compute instance list --compartment-id $(TENANCY_OCID) --display-name openclaw-gateway --query "data[0].id" --raw-output 2>/dev/null | xargs -I{} oci compute instance list-vnics --instance-id {} --query "data[0].\"public-ip\"" --raw-output 2>/dev/null)
+
+infra-ssh:
+	@if [ -z "$(GATEWAY_IP)" ]; then echo "Gateway IP not found. Is the instance running?"; exit 1; fi
+	ssh -i ~/.ssh/openclaw_rsa ubuntu@$(GATEWAY_IP)
+
+# Deploy the Cloudflare tunnel token (assumes it exists at ~/.openclaw/tunnel_token locally)
+deploy-token:
+	@if [ -z "$(GATEWAY_IP)" ]; then echo "Gateway IP not found."; exit 1; fi
+	@if [ ! -f ~/.openclaw/tunnel_token ]; then echo "Error: ~/.openclaw/tunnel_token not found on your Mac. Please create it first."; exit 1; fi
+	ssh -i ~/.ssh/openclaw_rsa ubuntu@$(GATEWAY_IP) "mkdir -p ~/.openclaw"
+	scp -i ~/.ssh/openclaw_rsa ~/.openclaw/tunnel_token ubuntu@$(GATEWAY_IP):~/.openclaw/tunnel_token
+	ssh -i ~/.ssh/openclaw_rsa ubuntu@$(GATEWAY_IP) "systemctl --user restart cloudflared.service"
+	@echo "Tunnel token deployed and cloudflared restarted."
 
