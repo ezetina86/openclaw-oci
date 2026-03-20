@@ -82,8 +82,8 @@ costs:
 
 # --- Operational Helpers ---
 
-# Get the public IP of the gateway instance
-GATEWAY_IP := $(shell oci compute instance list --compartment-id $(TENANCY_OCID) --display-name openclaw-gateway --query "data[0].id" --raw-output 2>/dev/null | xargs -I{} oci compute instance list-vnics --instance-id {} --query "data[0].\"public-ip\"" --raw-output 2>/dev/null)
+# Get the public IP of the gateway instance (filtered for RUNNING state)
+GATEWAY_IP := $(shell oci compute instance list --compartment-id $(TENANCY_OCID) --all --query "data[?\"display-name\"=='openclaw-gateway' && \"lifecycle-state\"=='RUNNING'].id" --raw-output 2>/dev/null | tr -d '[]"\n ' | xargs -I{} oci compute instance list-vnics --instance-id {} --query "data[0].\"public-ip\"" --raw-output 2>/dev/null)
 
 infra-ssh:
 	@if [ -z "$(GATEWAY_IP)" ]; then echo "Gateway IP not found. Is the instance running?"; exit 1; fi
