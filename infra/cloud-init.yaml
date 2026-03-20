@@ -14,19 +14,20 @@ runcmd:
   - curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64 -o /usr/local/bin/cloudflared
   - chmod +x /usr/local/bin/cloudflared
 
+  # Setup configuration directories for the ubuntu user
+  - mkdir -p /home/ubuntu/.openclaw
+  - mkdir -p /home/ubuntu/.config/systemd/user
+  - chown -R ubuntu:ubuntu /home/ubuntu/.openclaw
+  - chown -R ubuntu:ubuntu /home/ubuntu/.config
+
   # Run official OpenClaw installer (non-interactive)
   - |
     # Ensure Node.js 22 is present as required by OpenClaw
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
     apt-get install -y nodejs git
     
-    # Run the installer script
-    export OPENCLAW_NON_INTERACTIVE=true
-    curl -fsSL https://openclaw.ai/install.sh | bash
-
-  # Setup OpenClaw environment directories
-  - mkdir -p /home/ubuntu/.openclaw
-  - chown -R ubuntu:ubuntu /home/ubuntu/.openclaw
+    # Run the installer script as the ubuntu user
+    su - ubuntu -c "export OPENCLAW_NON_INTERACTIVE=true; curl -fsSL https://openclaw.ai/install.sh | bash"
 
   # Write the Cloudflared service unit (Native Ingress)
   - |
@@ -49,9 +50,10 @@ runcmd:
     WantedBy=default.target
     EOF
 
-  # Set permissions for systemd user configuration
+  # Final permission sync for systemd user configuration
   - chown -R ubuntu:ubuntu /home/ubuntu/.config
 
   # Enable and start cloudflared for the ubuntu user
-  - su - ubuntu -c 'XDG_RUNTIME_DIR=/run/user/$(id -u ubuntu) systemctl --user daemon-reload'
-  - su - ubuntu -c 'XDG_RUNTIME_DIR=/run/user/$(id -u ubuntu) systemctl --user enable --now cloudflared.service'
+  - |
+    su - ubuntu -c "export XDG_RUNTIME_DIR=/run/user/$(id -u ubuntu); systemctl --user daemon-reload"
+    su - ubuntu -c "export XDG_RUNTIME_DIR=/run/user/$(id -u ubuntu); systemctl --user enable --now cloudflared.service"
