@@ -1,6 +1,7 @@
+<p align="center"><img src="../logo.png" width="30%" alt="OpenClaw Logo"></p>
+
 # Operations Manual: Managing OpenClaw
 
-<img src="../logo.png" width="50%" alt="OpenClaw Logo">
 
 ```mermaid
 graph TD
