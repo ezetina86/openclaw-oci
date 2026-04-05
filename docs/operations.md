@@ -23,43 +23,46 @@ ssh -i ~/.ssh/openclaw_rsa ubuntu@<instance_ip>
 ```
 
 ## Service Management
-Since we use Rootless Podman, you must interact with the User-level systemd instance.
+Since we use a native installation, you must interact with the User-level systemd instance for both the gateway and the tunnel.
 
 ### Viewing Status
 ```bash
-systemctl --user status openclaw.service
+openclaw gateway status
 systemctl --user status cloudflared.service
 ```
 
-### Checking Container Logs
-Standard podman commands work for the current user:
+### Checking Logs
 ```bash
-podman logs -f openclaw
+journalctl --user -u openclaw-gateway.service -f
+journalctl --user -u cloudflared.service -f
 ```
 
 ### Updating OpenClaw
-1. Pull the latest image:
+1. Run the official update/installer:
    ```bash
-   podman pull docker.io/openclaw/openclaw:latest
+   curl -sSL https://raw.githubusercontent.com/openclaw/openclaw/main/install.sh | bash
    ```
-2. Restart the service to swap containers:
+2. Restart the gateway service:
    ```bash
-   systemctl --user restart openclaw.service
+   openclaw gateway start
    ```
 
 ## Cloudflare Tunnel Setup
-After the first launch, you must authorize the cloudflared tunnel.
+The tunnel is managed via the `cloudflared` service. To deploy or update your tunnel token from your local Mac:
 
-1. On your Mac, create the tunnel in the Cloudflare Dashboard (Access -> Tunnels).
-2. Grab the TUNNEL_TOKEN.
-3. Put the token in a secure location on the host:
+1. Ensure the token is in `~/.openclaw/tunnel_token` on your Mac.
+2. Run the deployment target:
    ```bash
-   mkdir -p ~/.openclaw
-   echo "YOUR_TOKEN" > ~/.openclaw/tunnel_token
+   make deploy-token
    ```
-4. Restart the tunnel service:
+This will automatically SSH into the instance, update the token, and restart the `cloudflared` service with the correct protocol (`--protocol http2`).
+
+## Device Pairing (Security)
+For security, new browsers connecting via `https://openclaw.ezetina.com` must be "paired" with the gateway.
+1. When you see "Pairing Required" in the browser, refresh the page.
+2. On your OCI instance, approve the latest request:
    ```bash
-   systemctl --user restart cloudflared.service
+   openclaw devices approve --latest
    ```
 
 ## Infrastructure Testing
@@ -91,5 +94,6 @@ pre-commit install
 Locally, these hooks only perform lightweight and fast checks (like `tofu fmt` and file sanitization) so they don't block your local workflow due to missing credentials. The heavier structural validations, tests, and Checkov security scans are intentionally deferred to the GitHub Actions CI pipeline.
 
 ## Troubleshooting
-- Logs: journalctl --user -u openclaw.service
-- Socket Errors: Ensure XDG_RUNTIME_DIR is set when running commands manually. (This is handled automatically by the cloud-init login script).
+- **Error 1033 (Cloudflare)**: Usually means the tunnel is failing to connect. Ensure the service is running with `--protocol http2`.
+- **Pairing Issues**: Ensure you have run `openclaw devices approve --latest` after attempting to connect.
+- **Port Conflicts**: Ensure no other service is using port `18789`.

@@ -1,5 +1,6 @@
 # Infrastructure Secrets
 .env
+infra-launch-loop.sh
 *.tfstate
 *.tfstate.backup
 .terraform/

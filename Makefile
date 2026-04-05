@@ -4,25 +4,31 @@ export $(shell sed 's/=.*//' .env)
 # Tenancy OCID used by audit targets
 TENANCY_OCID := ocid1.tenancy.oc1..aaaaaaaawbm2bh6yis76zb2s5r5jwt2ggn3zfehchtz3shzvtbj4zth3mhsq
 
-.PHONY: infra-init infra-plan infra-apply infra-destroy infra-test infra-check costs
+.DEFAULT_GOAL := help
 
-infra-init:
+.PHONY: help infra-init infra-plan infra-apply infra-destroy infra-test infra-check costs infra-ssh deploy-token
+
+help: ## Show this help message
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nTargets:\n"} \
+	/^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@echo ""
+
+infra-init: ## Initialize OpenTofu working directory
 	cd infra && tofu init
 
-infra-plan:
+infra-plan: ## Preview infrastructure changes
 	cd infra && tofu plan
 
-infra-apply:
+infra-apply: ## Apply infrastructure changes (auto-approve)
 	cd infra && tofu apply -auto-approve
 
-infra-destroy:
+infra-destroy: ## Destroy all infrastructure (auto-approve)
 	cd infra && tofu destroy -auto-approve
 
-infra-test:
+infra-test: ## Run OpenTofu tests
 	cd infra && tofu test
 
-# Audit all running compute instances and their shapes
-infra-check:
+infra-check: ## Audit running compute instances, IPs, and volumes
 	@echo "--- Running Compute Instances ---"
 	@oci compute instance list \
 		--compartment-id $(TENANCY_OCID) \
@@ -63,7 +69,7 @@ infra-check:
 		--output table 2>/dev/null || echo "None."
 
 # ARM Compute Limits (Free Tier)
-costs:
+costs: ## Show active budgets and ARM compute limits (Free Tier)
 	@echo "--- Active Budgets ---"
 	@oci budgets budget budget list \
 		--compartment-id $(TENANCY_OCID) \
@@ -85,12 +91,12 @@ costs:
 # Get the public IP of the gateway instance (filtered for RUNNING state)
 GATEWAY_IP := $(shell oci compute instance list --compartment-id $(TENANCY_OCID) --all --query "data[?\"display-name\"=='openclaw-gateway' && \"lifecycle-state\"=='RUNNING'].id" --raw-output 2>/dev/null | tr -d '[]"\n ' | xargs -I{} oci compute instance list-vnics --instance-id {} --query "data[0].\"public-ip\"" --raw-output 2>/dev/null)
 
-infra-ssh:
+infra-ssh: ## SSH into the gateway instance
 	@if [ -z "$(GATEWAY_IP)" ]; then echo "Gateway IP not found. Is the instance running?"; exit 1; fi
 	ssh -i ~/.ssh/openclaw_rsa ubuntu@$(GATEWAY_IP)
 
 # Deploy the Cloudflare tunnel token (assumes it exists at ~/.openclaw/tunnel_token locally)
-deploy-token:
+deploy-token: ## Deploy Cloudflare tunnel token and restart cloudflared
 	@if [ -z "$(GATEWAY_IP)" ]; then echo "Gateway IP not found."; exit 1; fi
 	@if [ ! -f ~/.openclaw/tunnel_token ]; then echo "Error: ~/.openclaw/tunnel_token not found on your Mac. Please create it first."; exit 1; fi
 	ssh -i ~/.ssh/openclaw_rsa ubuntu@$(GATEWAY_IP) "mkdir -p ~/.openclaw"
